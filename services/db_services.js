@@ -119,13 +119,31 @@ async function deleteFavorite(userID, petID) {
     });
 }
 
+async function getFavoritesByUserID(userID) {
+    const favorites = `SELECT DISTINCT name, f.pet_id, status_name, f.owner_id, link, u.fname from Favorites f 
+        INNER JOIN 
+        Users u ON u.user_id = f.owner_id 
+        INNER JOIN 
+        Pets p ON p.pet_id = f.pet_id 
+        INNER JOIN Statuses s ON s.status_id = p.status_id 
+        INNER JOIN 
+        Pictures pic ON pic.pet_id = p.pet_id 
+        where f.owner_id = ?`;
+
+    const getFavoritesQuery = await execQuery(favorites, userID).catch((err) => {
+        throw err.message;
+    })
+
+    return getFavoritesQuery;
+}
+
 async function getPetsByUser(userID) {
     const getPetsByStatusQuery = `SELECT DISTINCT name, pet_id, status_name, owner_id, link
-    FROM (SELECT * FROM Pets p WHERE owner_id = ?) mp
-    INNER JOIN 
-    Statuses s ON mp.status_id = s.status_id
-    INNER JOIN 
-    Pictures pic USING (pet_id)`;
+        FROM (SELECT * FROM Pets p WHERE owner_id = ?) mp
+        INNER JOIN 
+        Statuses s ON mp.status_id = s.status_id
+        INNER JOIN 
+        Pictures pic USING (pet_id)`;
 
     const getPetsByStatus = await execQuery(getPetsByStatusQuery, userID).catch((err) => {
         throw err.message;
@@ -148,5 +166,5 @@ async function getUserByEmail(userEmail) {
 }
 
 module.exports = {
-    getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, getUserByEmail
+    getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, getUserByEmail, getFavoritesByUserID
 };
