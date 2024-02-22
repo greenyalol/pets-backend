@@ -152,6 +152,31 @@ async function getPetsByUser(userID) {
     return getPetsByStatus;
 }
 
+async function getUserByID(id) {
+    const getUserByIDQuery = `SELECT email, password, fname, lname, phone
+    FROM Users u 
+    WHERE user_id = ?;`
+
+    const user = await execQuery(getUserByIDQuery, id).catch((err) => {
+        throw err.message;
+    });
+
+    return user;
+}
+
+async function updateUser(user) {
+    const { id, email, pass, fname, lname, phone } = user;
+    const updateUserQuery = `UPDATE Users
+    SET email = ?, password = ?, fname = ?, lname = ?, phone = ?
+    WHERE user_id = ? `;
+
+    const updateUser = await execQuery(updateUserQuery, email, pass, fname, lname, phone, id).catch((err) => {
+        throw err.message;
+    })
+
+    return updateUser;
+}
+
 //auth
 async function getUserByEmail(userEmail) {
     const getUserByEmailQuery = `SELECT user_id, email, password, fname, lname, phone, bio 
@@ -166,5 +191,5 @@ async function getUserByEmail(userEmail) {
 }
 
 module.exports = {
-    getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, getUserByEmail, getFavoritesByUserID
+    getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, getUserByEmail, getFavoritesByUserID, updateUser, getUserByID
 };
