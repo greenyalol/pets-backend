@@ -102,7 +102,7 @@ async function changeStatus(newStatus, petID, userID) {
             });
         }
     });
-    connection.end();
+    //connection.end();
 }
 
 async function addFavorite(userID, petID) {

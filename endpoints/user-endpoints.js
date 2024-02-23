@@ -93,8 +93,10 @@ app.get('/pets/user/favorites', [verifyUser], async (req, res) => {
     const { uid } = req;
     try {
         const favorites = await getFavoritesByUserID(uid);
+        console.log(favorites)
         res.json(favorites);
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: 'Internal server error' });
     }
 })
@@ -123,19 +125,6 @@ app.delete('/pets/:id/unsave', [verifyUser], async (req, res) => {
     }
 })
 
-//change pet status
-app.put('/pets/:id&:status/adopt', async (req, res) => {
-    const userID = 1; //get user id by token
-    const petID = parseInt(req.params.id);
-    const newStatus = req.params.status;
-    try {
-        await changeStatus(newStatus, petID, userID);
-        res.status('200').json({ status: 'ok' });
-    } catch (err) {
-        res.status('500').json({ error: 'Internal server error' });
-    }
-})
-
 //get pets by user
 app.get('/pets/user', [verifyUser], async (req, res) => {
     const { uid } = req;
@@ -157,6 +146,50 @@ app.get('/pets/:id', async (req, res) => {
         res.status('500').json({ error: 'Internal server error' });
     }
 });
+
+//change pet status
+app.put('/pets/:id/modify', [verifyUser], async (req, res) => {
+    const { uid } = req;
+    const { newStatus } = req.body;
+    const petID = parseInt(req.params.id);
+    let petStatus = '';
+    try {
+        const pet = await getPetByID(petID);
+        petStatus = pet[0].status_name;
+    } catch (err) {
+        res.status('500').json({ error: 'Internal server error' });
+        // return;
+    }
+
+    if (petStatus === newStatus) {
+        res.status(400).json({ message: `${petStatus} pet can't be ${newStatus}` });
+        return;
+    } else if (petStatus === 'adopted' && newStatus === 'fostered') {
+        res.status(400).json({ message: `${petStatus} pet can't be ${newStatus}. Please rehome to center first.` });
+        return;
+    }
+
+    //check if pet in user list than he can rehome his else he can'r rehome his
+    try {   
+        const userPets = await getPetsByUser(uid);
+        if (!userPets.some((pet) => pet.pet_id === petID) && newStatus === 'available') {
+            res.status(400).json({ message: `You can only rehome your own pet.` });
+            return;
+        }
+    } catch (err) {
+        res.status('500').json({ error: 'Internal server error' });
+        return;
+    }
+
+    try {
+        await changeStatus(newStatus, petID, uid);
+        res.status('200').json({ status: 'ok' });
+        // return;
+    } catch (err) {
+        res.status('500').json({ error: 'Internal server error' });
+        // return;
+    }
+})
 
 
 const PORT = process.env.APP_PORT;
