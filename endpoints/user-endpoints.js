@@ -161,12 +161,10 @@ app.put('/user', [verifyUser, userUpdateValidation], async (req, res) => {
     if (Object.hasOwn(req.body, 'password')) {
         const hash = await hashedPassword(req.body.password, 10);
         console.log(req.body.password);
-        console.log(hash);
         updatedUser = { ...existedUser[0], ...req.body, password: hash };
         console.log(updatedUser);
     } else {
         updatedUser = { ...existedUser[0], ...req.body };
-        console.log(updatedUser);
     }
 
     try {
