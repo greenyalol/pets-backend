@@ -1,5 +1,5 @@
 const { getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, addNewUser, getUserByID, getUserByEmail, getFavoritesByUserID, updateUser } = require('../services/db_services');
-const { userLoginValidation, userCredentialValidation } = require('../middlewares/validation')
+const { userLoginValidation, userCredentialValidation, userUpdateValidation } = require('../middlewares/validation')
 const express = require('express')
 require('dotenv').config({ path: '../.env' });
 var cors = require('cors')
@@ -147,30 +147,34 @@ app.get('/pets/user', [verifyUser], async (req, res) => {
 })
 
 //update user
-app.put('/user', [verifyUser, userCredentialValidation], async (req, res) => {
-    // const { uid } = req;
-    // //get user by id
-    // let existedUser;
-    // try {
-    //     existedUser = await getUserByID(uid);
-    // for (const prop in u) {
-    // if (!Object.hasOwn(req.body, prop)) {
-    // console.log(prop);
-    // }
-    // }
-    // } catch (err) {
-    //     res.status(500).json({ error: 'Internal server error' });
-    // }
+app.put('/user', [verifyUser, userUpdateValidation], async (req, res) => {
+    const { uid } = req;
+    //get user by id
+    let existedUser;
+    try {
+        existedUser = await getUserByID(uid);
+    } catch (err) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
 
-    // console.log(req.body);
-    // console.log(keys);
-    // try {
-    //     const updUser = await updateUser({ uid, ...req.body });
-    //     console.log(updUser);
-    //     res.status(200).json({ message: "Profile updated" })
-    // } catch (err) {
-    //     res.status('500').json({ error: 'Internal server error' });
-    // }
+    let updatedUser;
+    if (Object.hasOwn(req.body, 'password')) {
+        const hash = await hashedPassword(req.body.password, 10);
+        console.log(req.body.password);
+        console.log(hash);
+        updatedUser = { ...existedUser[0], ...req.body, password: hash };
+        console.log(updatedUser);
+    } else {
+        updatedUser = { ...existedUser[0], ...req.body };
+        console.log(updatedUser);
+    }
+
+    try {
+        const updUser = await updateUser({ uid, ...updatedUser });
+        res.status(200).json({ message: "Profile updated" })
+    } catch (err) {
+        res.status('500').json({ error: 'Internal server error' });
+    }
 })
 
 //Get Pet By ID
