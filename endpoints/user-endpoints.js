@@ -1,10 +1,11 @@
-const { getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, getUserByEmail, getFavoritesByUserID } = require('../services/db_services');
-const { userLoginValidation } = require('../middlewares/validation')
+const { getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, addNewUser, getUserByID, getUserByEmail, getFavoritesByUserID, updateUser } = require('../services/db_services');
+const { userLoginValidation, userCredentialValidation } = require('../middlewares/validation')
 const express = require('express')
 require('dotenv').config({ path: '../.env' });
 var cors = require('cors')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid')
 const cookieParser = require('cookie-parser');
 const { verifyUser } = require('../middlewares/protect-routes');
 
@@ -42,7 +43,6 @@ app.get('/pets/search', async (req, res) => {
         minWeight: req.query.minWeight ? parseInt(req.query.minWeight) : undefined,
         maxWeight: req.query.maxWeight ? parseInt(req.query.maxWeight) : undefined
     };
-    console.log(searchTerms);
     try {
         const searchResult = await advSearch(
             searchTerms.petStatus,
@@ -53,7 +53,6 @@ app.get('/pets/search', async (req, res) => {
             searchTerms.minWeight,
             searchTerms.maxWeight);
         res.json(searchResult);
-        console.log(searchResult);
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -69,11 +68,11 @@ app.post('/login', [userLoginValidation], async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
     if (existedUser.length === 0) {
-        res.status(401).json({ error: `User doesn't exist` });
+        res.status(401).json({ message: `User doesn't exist` });
     } else {
         const match = await bcrypt.compare(password, existedUser[0].password);
         if (!match) {
-            res.status(401).json({ error: 'Wrong password' });
+            res.status(401).json({ message: 'Wrong password' });
         } else {
             jwt.sign({ user_id: existedUser[0].user_id }, process.env.PRIVATE_KEY, function (err, token) {
                 if (err) {
@@ -81,10 +80,23 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 }
                 res.cookie('token', token, { expire: 24 * 60 * 60 * 1000 });
                 res.cookie('uid', existedUser[0].user_id, { expire: 24 * 60 * 60 * 1000 });
+                // res.cookie('uid', existedUser[0].fname, { expire: 24 * 60 * 60 * 1000 });
+                const { lname, fname, email, phone } = existedUser[0];
                 // console.log(res.redirect(`/pets/user/${existedUser[0].user_id}`))
-                return res.json({ message: "Auth Succeed" });
+                return res.json({ message: "Auth Succeed", user: { lname, fname, email, phone } });
             });
         }
+    }
+})
+
+//get user by id
+app.get('/user', [verifyUser], async (req, res) => {
+    const { uid } = req;
+    try {
+        const user = await getUserByID(uid);
+        res.status('200').json(user[0]);
+    } catch (err) {
+        res.status('500').json({ error: 'Internal server error' });
     }
 })
 
@@ -93,10 +105,8 @@ app.get('/pets/user/favorites', [verifyUser], async (req, res) => {
     const { uid } = req;
     try {
         const favorites = await getFavoritesByUserID(uid);
-        console.log(favorites)
         res.json(favorites);
     } catch (err) {
-        console.log(err);
         res.status(500).json({ error: 'Internal server error' });
     }
 })
@@ -136,6 +146,33 @@ app.get('/pets/user', [verifyUser], async (req, res) => {
     }
 })
 
+//update user
+app.put('/user', [verifyUser, userCredentialValidation], async (req, res) => {
+    // const { uid } = req;
+    // //get user by id
+    // let existedUser;
+    // try {
+    //     existedUser = await getUserByID(uid);
+    // for (const prop in u) {
+    // if (!Object.hasOwn(req.body, prop)) {
+    // console.log(prop);
+    // }
+    // }
+    // } catch (err) {
+    //     res.status(500).json({ error: 'Internal server error' });
+    // }
+
+    // console.log(req.body);
+    // console.log(keys);
+    // try {
+    //     const updUser = await updateUser({ uid, ...req.body });
+    //     console.log(updUser);
+    //     res.status(200).json({ message: "Profile updated" })
+    // } catch (err) {
+    //     res.status('500').json({ error: 'Internal server error' });
+    // }
+})
+
 //Get Pet By ID
 app.get('/pets/:id', async (req, res) => {
     const petID = req.params.id;
@@ -170,7 +207,7 @@ app.put('/pets/:id/modify', [verifyUser], async (req, res) => {
     }
 
     //check if pet in user list than he can rehome his else he can'r rehome his
-    try {   
+    try {
         const userPets = await getPetsByUser(uid);
         if (!userPets.some((pet) => pet.pet_id === petID) && newStatus === 'available') {
             res.status(400).json({ message: `You can only rehome your own pet.` });
@@ -188,6 +225,44 @@ app.put('/pets/:id/modify', [verifyUser], async (req, res) => {
     } catch (err) {
         res.status('500').json({ error: 'Internal server error' });
         // return;
+    }
+})
+
+const hashedPassword = (password, salt) => {
+    return new Promise((resolve, reject) => {
+        bcrypt.hash(password, salt, (err, hash) => {
+            if (err) reject();
+            resolve(hash);
+        });
+    });
+};
+
+app.post('/signup', [userCredentialValidation], async (req, res) => {
+    const { email, password, fname, lname, phone } = req.body;
+    let existedUser = [];
+
+    try {
+        existedUser = await getUserByEmail(email);
+    } catch (err) {
+        res.status(500).json({ message: 'Internal server error' });
+        return;
+    }
+
+    if (existedUser.length !== 0) {
+        res.status(401).json({ message: `User already exists` });
+        return;
+    } else {
+        const hash = await hashedPassword(password, 10);
+        const newUser = { password: hash, email: email, fname: fname, lname: lname, phone: phone };
+        if (JSON.stringify(newUser) !== '{}') {
+            try {
+                const result = await addNewUser(newUser);
+                res.status(200).json({ message: 'Registration complete' });
+            } catch (err) {
+                res.status('500').json({ error: 'Internal server error' });
+                return;
+            }
+        }
     }
 })
 
