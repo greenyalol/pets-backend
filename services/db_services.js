@@ -83,9 +83,17 @@ async function changeStatus(newStatus, petID, userID) {
         SET status_id = ?, owner_id = ?
         WHERE pet_id = ?;`
 
-    const updatePets = await execQuery(updatePetsQuery, newStatusID[0].status_id, userID, petID).catch((err) => {
-        throw err.message;
-    });
+    let updatePets;
+    if (newStatus === 'available') {
+        updatePets = await execQuery(updatePetsQuery, newStatusID[0].status_id, null, petID).catch((err) => {
+            throw err.message;
+        });
+    } else {
+        updatePets = await execQuery(updatePetsQuery, newStatusID[0].status_id, userID, petID).catch((err) => {
+            throw err.message;
+        });
+    }
+
 
     const insertTransferQuery = `INSERT INTO Transfers(pet_id, initiator_id, new_status_id, prev_status_id, transfer_date)
         VALUES
@@ -165,12 +173,12 @@ async function getUserByID(id) {
 }
 
 async function updateUser(user) {
-    const { id, email, pass, fname, lname, phone } = user;
+    const { uid, email, password, fname, lname, phone } = user;
     const updateUserQuery = `UPDATE Users
     SET email = ?, password = ?, fname = ?, lname = ?, phone = ?
     WHERE user_id = ? `;
 
-    const updateUser = await execQuery(updateUserQuery, email, pass, fname, lname, phone, id).catch((err) => {
+    const updateUser = await execQuery(updateUserQuery, email, password, fname, lname, phone, uid).catch((err) => {
         throw err.message;
     })
 
@@ -190,6 +198,20 @@ async function getUserByEmail(userEmail) {
     return user;
 }
 
+//new user
+async function addNewUser(newUser) {
+    const { email, password, fname, lname, phone } = newUser;
+    const addNewUserQuery = `INSERT INTO Users (email, password, fname, lname, phone)
+    VALUES
+    (?, ?, ?, ?, ?)`;
+
+    const addUser = await execQuery(addNewUserQuery, email, password, fname, lname, phone).catch((err) => {
+        throw err.message;
+    })
+
+    return addUser;
+}
+
 module.exports = {
-    getPetByID, advSearch, changeStatus, addFavorite, deleteFavorite, getPetsByUser, getUserByEmail, getFavoritesByUserID, updateUser, getUserByID
+    getPetByID, advSearch, addNewUser, changeStatus, addFavorite, deleteFavorite, getPetsByUser, getUserByEmail, getFavoritesByUserID, updateUser, getUserByID
 };
