@@ -15,7 +15,6 @@ function execQuery(myQuery, ...params) {
     return new Promise((resolve, reject) => {
         const c = connection.query(myQuery, params, (err, results, fields) => {
             err ? reject(err) : resolve(JSON.parse(JSON.stringify(results)));
-            console.log(err);
         })
     })
 }
