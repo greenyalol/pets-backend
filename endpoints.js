@@ -16,9 +16,9 @@ const fs = require('fs');
 
 
 cloudinary.config({
-    cloud_name: 'doorkt11e',
-    api_key: '948874497385985',
-    api_secret: 'RpazOIK2RxMz6SikgqUwI6EdmFQ'
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 const storage = multer.diskStorage({
@@ -105,7 +105,6 @@ app.post('/login', [userLoginValidation], async (req, res) => {
         let userRoles = [];
         try {
             userRoles = await getUserRoles(existedUser[0].user_id);
-            console.log(userRoles);
         } catch (err) {
             res.status(500).json({ error: 'Internal server error' });
         }
@@ -122,7 +121,6 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 res.cookie('uid', existedUser[0].user_id, { expire: 24 * 60 * 60 * 1000 });
                 // res.cookie('uid', existedUser[0].fname, { expire: 24 * 60 * 60 * 1000 });
                 const { lname, fname, email, phone } = existedUser[0];
-                // console.log(res.redirect(`/pets/user/${existedUser[0].user_id}`))
                 const u = { lname, fname, email, phone }
                 return res.json(u);
             });
@@ -460,7 +458,6 @@ app.delete('/users/:id', [verifyUser, hasAdminRole], async (req, res) => {
 
 app.put('/users', [verifyUser, hasAdminRole], async (req, res) => {
     const { role_id, user_id } = req.body;
-    console.log(req.body);
     try {
         const updatedUser = await updateUserRole(user_id, role_id);
         res.json(updatedUser);

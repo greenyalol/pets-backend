@@ -21,7 +21,6 @@ async function hasAdminRole(req, res, next) {
     const { uid } = req;
     try {
         const userRoles = await getUserRoles(uid);
-        console.log(userRoles);
         if (userRoles.some((user) => user.slug === 'admin')) {
             next();
         } else {

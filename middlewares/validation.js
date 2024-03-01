@@ -107,8 +107,6 @@ function userUpdateValidation(req, res, next) {
 }
 
 function petValidation(req, res, next) {
-    // console.log(req.body);
-    // console.log(req.file);
     const { name, status_id, type_id, height, weight, color, bio, dietary, breed_id } = req.body;
     const schema = {
         type: "object",
@@ -151,7 +149,6 @@ function petValidation(req, res, next) {
     }
     const validate = ajv.compile(schema);
     const valid = validate({ name, status_id, type_id, height, weight, color, bio, dietary, breed_id });
-    // console.log(valid);
     if (!valid) {
         res.status(400).json({ error: 'Bad request' });
         return;
@@ -196,7 +193,6 @@ function typeValidation(req, res, next) {
     }
     const validate = ajv.compile(schema);
     const valid = validate({ typeName });
-    console.log(valid);
     if (!valid) {
         res.status(400).json({ error: 'Bad request' });
         return;
