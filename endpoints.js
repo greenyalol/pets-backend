@@ -117,9 +117,27 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 if (err) {
                     res.status(500).json({ error: 'Internal server error' });
                 }
-                res.cookie('token', token, { expire: 24 * 60 * 60 * 1000 });
-                res.cookie('roles', userRoles[0].slug, { expire: 24 * 60 * 60 * 1000 });
-                res.cookie('uid', existedUser[0].user_id, { expire: 24 * 60 * 60 * 1000 });
+                res.cookie('token', token, { 
+                    expire: 24 * 60 * 60 * 1000,
+                    path: '/',
+                    httpOnly: true,
+                    secure: false, // Установите в false для использования куки без HTTPS
+                    sameSite: 'none'
+                });
+                res.cookie('roles', userRoles[0].slug, { 
+                    expire: 24 * 60 * 60 * 1000,
+                    path: '/',
+                    httpOnly: true,
+                    secure: false, // Установите в false для использования куки без HTTPS
+                    sameSite: 'none' 
+                });
+                res.cookie('uid', existedUser[0].user_id, { 
+                    expire: 24 * 60 * 60 * 1000,
+                    path: '/',
+                    httpOnly: true,
+                    secure: false, // Установите в false для использования куки без HTTPS
+                    sameSite: 'none'
+                });
                 // res.cookie('uid', existedUser[0].fname, { expire: 24 * 60 * 60 * 1000 });
                 const { lname, fname, email, phone } = existedUser[0];
                 const u = { lname, fname, email, phone }
