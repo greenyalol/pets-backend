@@ -43,7 +43,7 @@ const app = express();
 
 app.use(cors(
     {
-        origin: 'https://65e3612fb69336dfcf6d858a--celadon-macaron-0c9435.netlify.app',
+        origin: 'https://fs-pet-adoption-fe-greenyalol-g6so.vercel.app/',
         // origin: true,
         credentials: true
     }));
@@ -120,8 +120,8 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 }
                 res.cookie('token', token, {
                     expire: 24 * 60 * 60 * 1000,
-                    secure: true,
-                    sameSite: 'none'
+                    // secure: true,
+                    // sameSite: 'none'
                 });
                 // res.cookie('roles', userRoles[0].slug, {
                 //     sameSite: 'none',
