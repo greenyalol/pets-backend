@@ -43,7 +43,7 @@ const app = express();
 
 app.use(cors(
     {
-        origin: 'http://pets-frontend-react.s3-website.eu-north-1.amazonaws.com',
+        origin: 'https://65e3612fb69336dfcf6d858a--celadon-macaron-0c9435.netlify.app',
         // origin: true,
         credentials: true
     }));
