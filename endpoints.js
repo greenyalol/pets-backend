@@ -121,7 +121,6 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 res.cookie('token', token, {
                     maxAge: 24 * 60 * 60 * 1000,
                     secure: true,
-                    sameSite: "none"
                 });
                 res.cookie('roles', userRoles[0].slug, {
                     //httpOnly: true,
@@ -130,12 +129,10 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                     //partitioned: true,
                     maxAge: 24 * 60 * 60 * 1000,
                     secure: true,
-                    sameSite: "none"
                 });
                 res.cookie('uid', existedUser[0].user_id, {
                     maxAge: 24 * 60 * 60 * 1000,
                     secure: true,
-                    sameSite: "none"
                 });
                 // res.cookie('uid', existedUser[0].fname, { expire: 24 * 60 * 60 * 1000 });
                 const { lname, fname, email, phone } = existedUser[0];
