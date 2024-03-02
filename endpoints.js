@@ -56,7 +56,7 @@ app.use((req, res, next) => {
         'Access-Control-Allow-Headers',
         'Origin, X-Requested-With, Content-Type, Accept'
     )
-    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Origin', 'https://65e3612fb69336dfcf6d858a--celadon-macaron-0c9435.netlify.app')
     next()
 })
 
