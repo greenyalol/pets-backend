@@ -482,7 +482,13 @@ app.put('/users', [verifyUser, hasAdminRole], async (req, res) => {
     }
 })
 
+app.get("/", (req, res) => {
+    res.send("Express on Vercel");
+});
+
 const PORT = process.env.APP_PORT;
 app.listen(PORT, () => {
     console.log(`App listening on port ${PORT}`)
 });
+
+module.exports = app;
