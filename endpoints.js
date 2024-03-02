@@ -119,6 +119,7 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 }
                 res.cookie('token', token, { 
                     expire: 24 * 60 * 60 * 1000,
+                    domain: '.amazonaws.com',
                     path: '/',
                     httpOnly: true,
                     secure: false, // Установите в false для использования куки без HTTPS
@@ -126,6 +127,7 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 });
                 res.cookie('roles', userRoles[0].slug, { 
                     expire: 24 * 60 * 60 * 1000,
+                    domain: '.amazonaws.com',
                     path: '/',
                     httpOnly: true,
                     secure: false, // Установите в false для использования куки без HTTPS
@@ -133,6 +135,7 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                 });
                 res.cookie('uid', existedUser[0].user_id, { 
                     expire: 24 * 60 * 60 * 1000,
+                    domain: '.amazonaws.com',
                     path: '/',
                     httpOnly: true,
                     secure: false, // Установите в false для использования куки без HTTPS
