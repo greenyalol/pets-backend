@@ -43,8 +43,8 @@ const app = express();
 
 app.use(cors(
     {
-        // origin: 'http://localhost:5173',
-        origin: true,
+        origin: 'http://pets-frontend-react.s3-website.eu-north-1.amazonaws.com',
+        // origin: true,
         credentials: true
     }));
 app.use(express.json());
