@@ -123,16 +123,16 @@ app.post('/login', [userLoginValidation], async (req, res) => {
                     secure: true,
                     sameSite: 'none'
                 });
-                res.cookie('roles', userRoles[0].slug, {
-                    sameSite: 'none',
-                    expire: 24 * 60 * 60 * 1000,
-                    secure: true,
-                });
-                res.cookie('uid', existedUser[0].user_id, {
-                    expire: 24 * 60 * 60 * 1000,
-                    secure: true,
-                    sameSite: 'none'
-                });
+                // res.cookie('roles', userRoles[0].slug, {
+                //     sameSite: 'none',
+                //     expire: 24 * 60 * 60 * 1000,
+                //     secure: true,
+                // });
+                // res.cookie('uid', existedUser[0].user_id, {
+                //     expire: 24 * 60 * 60 * 1000,
+                //     secure: true,
+                //     sameSite: 'none'
+                // });
                 // res.cookie('uid', existedUser[0].fname, { expire: 24 * 60 * 60 * 1000 });
                 const { lname, fname, email, phone } = existedUser[0];
                 const u = { lname, fname, email, phone }
